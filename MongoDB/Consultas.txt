@@ -1,0 +1,23 @@
+mongodb mongoimport -d sakila -c customers --file customers.json
+mongodb mongoimport -d sakila -c films --file films.json
+mongodb mongoimport -d sakila -c stores --file stores.json
+******
+mongo
+show dbs
+use sakila
+db.customers.find({"City" : "Athenai"})
+db.customers.find({$or: [{"City" : "Athenai"}, {"Country" : "Greece"}]}).count()
+db.customers.find({$or: [{"City" : "Athenai"}, {"Country" : "Greece"}]})
+
+
+db.films.insertMany([ {"Actors" : [{"First name" : "DIANA", "Last name" : "RANGEL",}]},  {"Actors" : [{"First name" : "LIZBETH", "Last name" : "SOTO",}]} ])
+db.films.insertOne({"Actors" : [{"First name" : "DIANA", "Last name" : "RANGEL",}], "Category" : "Foreign"})
+
+db.films.updateMany( {Length: { $ne: 126 } }, { $set: { Length: 126 } })
+
+db.stores.find({}).count()
+db.stores.deleteMany({ City : "Lethbridge"})
+
+mongoexport --collection=customers --db=sakila --out=customers.json
+mongoexport --collection=films --db=sakila --out=films.json
+mongoexport --collection=stores --db=sakila --out=stores.json
