@@ -1,77 +1,54 @@
-package com.wizeline.utils;
-
-import java.util.HashMap;
+package com.wizeline.DTO;
 import java.util.Map;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+public class UserDTO {
 
-import com.wizeline.enums.AccountType;
-import com.wizeline.enums.Country;
+    private String user;
+    private String password;
 
-public class Utils {
+    public String getUser() {
+        return user;
+    }
 
-    private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$]).{6,8}$";
-    private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
+    public void setUser(String user) {
+        this.user = user;
+    }
 
-    // Definicion del patron para validar formato de fecha (dd-mm-yyyy)
-    private static Pattern DATE_PATTERN = Pattern.compile("^\\d{2}-\\d{2}-\\d{4}$");
+    public String getPassword() {
+        return password;
+    }
 
 
-    public static String getString(String value) {
-        if(value != null) {
-            return value;
+    public void setPassword(String password) {
+
+        this.password = password;
+    }
+
+
+
+    public UserDTO getParameters(Map<String, String> userParam) {
+        UserDTO user = new UserDTO();
+        user.setUser(userParam.get("user"));
+        user.setPassword(userParam.get("password"));
+        return user;
+    }
+
+    class ClaseInterna {
+        void validar() {
+            if (user == null) {
+                System.out.println("Validar inf.");
+            } else {
+                System.out.println("OK");
+            }
+
         }
-        return "";
     }
 
-    public static boolean validateNullValue(String value) {
-        if(value != null) {
-            return true;
+    static class ClaseInternaDos {
+        public static void main(String[] args) {
+            UserDTO objetoExterno = new UserDTO();
+            UserDTO.ClaseInterna objetoInterno = objetoExterno.new ClaseInterna();
+            objetoInterno.validar();
         }
-        return false;
-    }
 
-    public static boolean isPasswordValid(String password) {
-        // Valida la contraseña contra el patron que definimos
-        Matcher matcher = pattern.matcher(password);
-        return matcher.matches();
-    }
-
-    public static boolean isDateFormatValid(String date) {
-        // Valida la fecha contra el patron que definimos
-        return DATE_PATTERN.matcher(date).matches();
-    }
-
-    public static long randomAcountNumber() {
-        return new Random().nextLong();
-    }
-
-    public static double randomBalance() {
-        return new Random()
-                .doubles(1000, 9000)
-                .limit(1)
-                .findFirst()
-                .getAsDouble();
-    }
-
-    public static AccountType pickRandomAccountType() {
-        // Creando un arreglo a partir de valores ya definidos
-        AccountType[] accountTypes = AccountType.values();
-        return accountTypes[new Random().nextInt(accountTypes.length)];
-    }
-
-    public static String randomInt() {
-        return String.valueOf(new Random().ints(1, 10)
-                .findFirst()
-                .getAsInt());
-    }
-
-    public static String getCountry(Country country) {
-        Map<Country, String> countries = new HashMap<>();
-        countries.put(Country.US, "United States");
-        countries.put(Country.MX, "Mexico");
-        countries.put(Country.FR, "France");
-        return countries.get(country);
     }
 }

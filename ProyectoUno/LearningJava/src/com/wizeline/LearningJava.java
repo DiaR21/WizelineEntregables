@@ -1,22 +1,6 @@
-
 package com.wizeline;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Documented;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.logging.Logger;
-import com.wizeline.utils.exceptions.ExcepcionGenerica;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.wizeline.BO.BankAccountBO;
 import com.wizeline.BO.BankAccountBOImpl;
@@ -25,36 +9,47 @@ import com.wizeline.BO.UserBOImpl;
 import com.wizeline.DTO.BankAccountDTO;
 import com.wizeline.DTO.ResponseDTO;
 import com.wizeline.DTO.UserDTO;
+import com.wizeline.utils.exceptions.ExcepcionGenerica;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import static com.wizeline.utils.Utils.isDateFormatValid;
 import static com.wizeline.utils.Utils.isPasswordValid;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.function.Function;
+
 
 public class LearningJava extends Thread {
 
     private static final Logger LOGGER = Logger.getLogger(LearningJava.class.getName());
-    private static final String SUCCESS_CODE = "OK000";
+    private static String SUCCESS_CODE = "OK000";
     private static String responseTextThread = "";
+    private ResponseDTO response;
     private static String textThread = "";
+
 
     public static void main(String[] args) throws IOException {
         LOGGER.info("LearningJava - Iniciado servicio REST ...");
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-        String msgProcPeticion = "LearningJava - Inicia procesamiento de peticion ...";
-
-
         server.createContext("/api/login", (exchange -> {
-            LOGGER.info(msgProcPeticion);
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             ResponseDTO response = new ResponseDTO();
             String responseText = "";
-
             if ("GET".equals(exchange.getRequestMethod())) {
                 LOGGER.info("LearningJava - Procesando peticion HTTP de tipo GET");
-                UserDTO user = new UserDTO();
+                UserDTO user =  new UserDTO();
                 user = user.getParameters(splitQuery(exchange.getRequestURI()));
                 response = login(user.getUser(), user.getPassword());
                 JSONObject json = new JSONObject(response);
@@ -73,25 +68,35 @@ public class LearningJava extends Thread {
             output.close();
             exchange.close();
         }));
-
-
         server.createContext("/api/createUser", (exchange -> {
-            LOGGER.info(msgProcPeticion);
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             ResponseDTO response = new ResponseDTO();
+            String responseText = "";
 
             exchange.getRequestBody();
             if ("POST".equals(exchange.getRequestMethod())) {
                 LOGGER.info("LearningJava - Procesando peticion HTTP de tipo GET");
-                UserDTO user = new UserDTO();
+
+                UserDTO user =  new UserDTO();
                 user = user.getParameters(splitQuery(exchange.getRequestURI()));
                 response = createUser(user.getUser(), user.getPassword());
+
+                 /**Usuario creado por el patron Builder
+                User user = new User();
+                user = user.getParameters(splitQuery(exchange.getRequestURI()));*/
+
                 JSONObject json = new JSONObject(response);
                 responseText = json.toString();
                 exchange.getResponseHeaders().set("contentType", "application/json; charset=UTF-8");
                 exchange.sendResponseHeaders(200, responseText.getBytes().length);
+
+
+
             } else {
+
                 exchange.sendResponseHeaders(405, -1);
             }
+
             OutputStream output = exchange.getResponseBody();
 
             LOGGER.info("LearningJava - Cerrando recursos ...");
@@ -100,48 +105,8 @@ public class LearningJava extends Thread {
             output.close();
             exchange.close();
         }));
-
-        server.createContext("/api/createUsers", (exchange -> {
-            LOGGER.info(msgProcPeticion);
-            ResponseDTO response = new ResponseDTO();
-            exchange.getRequestBody();
-            if ("POST".equals(exchange.getRequestMethod())) {
-                LOGGER.info("LearningJava - Procesando peticion HTTP de tipo POST");
-
-                StringBuilder text = new StringBuilder();
-                try (Scanner scanner = new Scanner(exchange.getRequestBody())) {
-                    while(scanner.hasNext()) {
-                        text.append(scanner.next());
-                    }
-                } catch (Exception e) {
-                    LOGGER.severe(e.getMessage());
-                    throw new ExcepcionGenerica("Fallo al obtener el request del body");
-                }
-                textThread = text.toString();
-
-                LOGGER.info(textThread);
-                LearningJava thread = new LearningJava();
-                thread.start();
-
-                while(thread.isAlive());
-
-                exchange.getResponseHeaders().set("contentType", "application/json; charset=UTF-8");
-                exchange.sendResponseHeaders(200, responseTextThread.getBytes().length);
-            } else {
-                exchange.sendResponseHeaders(405, -1);
-            }
-            OutputStream output = exchange.getResponseBody();
-
-            LOGGER.info("LearningJava - Cerrando recursos ...");
-            output.write(responseTextThread.getBytes());
-            output.flush();
-            output.close();
-            exchange.close();
-        }));
-
         server.createContext("/api/getUserAccount", (exchange -> {
-            LOGGER.info(msgProcPeticion);
-            Instant inicioDeEjecucion = Instant.now();
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             ResponseDTO response = new ResponseDTO();
 
             String responseText = "";
@@ -150,10 +115,8 @@ public class LearningJava extends Thread {
                 UserDTO user =  new UserDTO();
                 Map<String, String> params = splitQuery(exchange.getRequestURI());
                 user = user.getParameters(params);
-                // Valida formato del parametro fecha (date) [dd-mm-yyyy]
                 String lastUsage = params.get("date");
                 if (isDateFormatValid(lastUsage)) {
-                    // Valida el password del usuario (password)
                     if (isPasswordValid(user.getPassword())) {
                         response = login(user.getUser(), user.getPassword());
                         if (response.getCode().equals(SUCCESS_CODE)) {
@@ -174,27 +137,24 @@ public class LearningJava extends Thread {
                     exchange.sendResponseHeaders(400, responseText.getBytes().length);
                 }
             } else {
+
                 exchange.sendResponseHeaders(405, -1);
             }
             OutputStream output = exchange.getResponseBody();
-            Instant finalDeEjecucion = Instant.now();
-
             LOGGER.info("LearningJava - Cerrando recursos ...");
-            String total = new String(String.valueOf(Duration.between(inicioDeEjecucion, finalDeEjecucion).toMillis()).concat(" segundos."));
-            LOGGER.info("Tiempo de respuesta: ".concat(total));
             output.write(responseText.getBytes());
             output.flush();
             output.close();
             exchange.close();
         }));
 
+        server.createContext("/api/getAccounts", (LearningJava::handle));
 
         server.createContext("/api/getAccounts", (exchange -> {
-            LOGGER.info(msgProcPeticion);
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             Instant inicioDeEjecucion = Instant.now();
             BankAccountBO bankAccountBO = new BankAccountBOImpl();
             String responseText = "";
-
             if ("GET".equals(exchange.getRequestMethod())) {
                 LOGGER.info("LearningJava - Procesando peticion HTTP de tipo GET");
                 List<BankAccountDTO> accounts = bankAccountBO.getAccounts();
@@ -207,7 +167,6 @@ public class LearningJava extends Thread {
             }
             OutputStream output = exchange.getResponseBody();
             Instant finalDeEjecucion = Instant.now();
-
             LOGGER.info("LearningJava - Cerrando recursos ...");
             String total = new String(String.valueOf(Duration.between(inicioDeEjecucion, finalDeEjecucion).toMillis()).concat(" segundos."));
             LOGGER.info("Tiempo de respuesta: ".concat(total));
@@ -217,28 +176,58 @@ public class LearningJava extends Thread {
             exchange.close();
         }));
 
+        server.createContext("/api/createUsers", (exchange -> {
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
+            ResponseDTO response = new ResponseDTO();
+            exchange.getRequestBody();
+            if ("POST".equals(exchange.getRequestMethod())) {
+                LOGGER.info("LearningJava - Procesando peticion HTTP de tipo POST");
+
+                StringBuilder text = new StringBuilder();
+                try (Scanner scanner = new Scanner(exchange.getRequestBody())) {
+                    while(scanner.hasNext()) {
+                        text.append(scanner.next());
+                    }
+                } catch (Exception e) {
+                    LOGGER.severe(e.getMessage());
+                    throw new ExcepcionGenerica("Fallo al obtener el request del body");
+                }
+                textThread = text.toString();
+                LOGGER.info(textThread);
+                LearningJava thread = new LearningJava();
+                thread.start();
+
+                while(thread.isAlive());
+
+                exchange.getResponseHeaders().set("contentType", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(200, responseTextThread.getBytes().length);
+            } else {
+                exchange.sendResponseHeaders(405, -1);
+            }
+            OutputStream output = exchange.getResponseBody();
+            LOGGER.info("LearningJava - Cerrando recursos ...");
+            output.write(responseTextThread.getBytes());
+            output.flush();
+            output.close();
+            exchange.close();
+        }));
 
         server.createContext("/api/getAccountsGroupByType", (exchange -> {
-            LOGGER.info(msgProcPeticion);
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             Instant inicioDeEjecucion = Instant.now();
             BankAccountBO bankAccountBO = new BankAccountBOImpl();
             String responseText = "";
-
             if ("GET".equals(exchange.getRequestMethod())) {
                 LOGGER.info("LearningJava - Procesando peticion HTTP de tipo GET");
                 List<BankAccountDTO> accounts = bankAccountBO.getAccounts();
-
-             l
                 Map<String, List<BankAccountDTO>> groupedAccounts;
                 Function<BankAccountDTO, String> groupFunction = (account) -> account.getAccountType().toString();
                 groupedAccounts = accounts.stream().collect(Collectors.groupingBy(groupFunction));
-
                 JSONObject json = new JSONObject(groupedAccounts);
                 responseText = json.toString();
                 exchange.getResponseHeaders().add("Content-type", "application/json");
                 exchange.sendResponseHeaders(200, responseText.getBytes().length);
             } else {
-
                 exchange.sendResponseHeaders(405, -1);
             }
             OutputStream output = exchange.getResponseBody();
@@ -253,9 +242,38 @@ public class LearningJava extends Thread {
             exchange.close();
         }));
 
+
+
         server.setExecutor(null);
         server.start();
         LOGGER.info("LearningJava - Server started on port 8080");
+    }
+
+    private static void handle(HttpExchange exchange) {
+        LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
+        BankAccountBO bankAccountBO = new BankAccountBOImpl();
+
+        String responseText = "";
+        if ("GET".equals(exchange.getRequestMethod())) {
+            LOGGER.info("LearningJava - Procesando peticion HTTP de tipo GET");
+            Set<BankAccountDTO> accounts = (Set<BankAccountDTO>) bankAccountBO.getAccounts();
+            Map<String, Set<BankAccountDTO>> groupedAccountsDos;
+            Function<BankAccountDTO, String> groupFunctionDos = (account) -> account.getAccountType().toString();
+            groupedAccountsDos = accounts.stream().collect(Collectors.toCollection(groupFunctionDos));
+            JSONArray json = new JSONArray(groupedAccountsDos);
+            responseText = json.toString();
+            exchange.getResponseHeaders().add("Content-type", "application/json");
+            exchange.sendResponseHeaders(200, responseText.getBytes().length);
+        } else {
+            exchange.sendResponseHeaders(405, -1);
+        }
+        OutputStream output = exchange.getResponseBody();
+
+        LOGGER.info("LearningJava - Cerrando recursos ...");
+        output.write(responseText.getBytes());
+        output.flush();
+        output.close();
+        exchange.close();
     }
 
     @Override
@@ -267,16 +285,14 @@ public class LearningJava extends Thread {
             throw new ExcepcionGenerica(e.getMessage());
         }
     }
-
+    @SuppressWarnings("unused")
     private void crearUsuarios() {
         try {
             String user = "user";
             String pass = "password";
             JSONArray jsonArray = new JSONArray(textThread);
             JSONObject userJson;
-
             ResponseDTO response = null;
-
             LOGGER.info("jsonArray.length(): " + jsonArray.length());
             for(int i = 0; i < jsonArray.length(); i++) {
                 userJson = new JSONObject(jsonArray.get(i).toString());
@@ -318,30 +334,30 @@ public class LearningJava extends Thread {
         }
     }
 
-    private static ResponseDTO login(String user, String password) {
+
+    private static ResponseDTO login(String User, String password) {
         UserBO userBo = new UserBOImpl();
-        return userBo.login(user, password);
+        return userBo.login(User, password);
     }
 
-    private static ResponseDTO createUser(String user, String password) {
+    private static ResponseDTO createUser(String User, String password) {
         UserBO userBo = new UserBOImpl();
-        return userBo.createUser(user, password);
+        return userBo.createUser(User, password);
     }
 
-    public static Map<String, String> splitQuery(URI uri) {
-        Map<String, String> queryPairs = new LinkedHashMap<String, String>();
+    public static Map<String, String> splitQuery(URI uri) throws UnsupportedEncodingException {
+        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
         String query = uri.getQuery();
         String[] pairs = query.split("&");
         for (String pair : pairs) {
             int idx = pair.indexOf("=");
-            queryPairs.put(URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8), URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8));
+            query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
         }
-        return queryPairs;
+        return query_pairs;
     }
 
     private static BankAccountDTO getAccountDetails(String user, String lastUsage) {
         BankAccountBO bankAccountBO = new BankAccountBOImpl();
         return bankAccountBO.getAccountDetails(user, lastUsage);
     }
-
 }

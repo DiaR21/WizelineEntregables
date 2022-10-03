@@ -1,22 +1,21 @@
 package com.wizeline.BO;
 
+import com.wizeline.DTO.BankAccountDTO;
+import com.wizeline.enums.Country;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import com.wizeline.DTO.BankAccountDTO;
-import com.wizeline.enums.Country;
-import static com.wizeline.utils.Utils.getCountry;
-import static com.wizeline.utils.Utils.pickRandomAccountType;
-import static com.wizeline.utils.Utils.randomAcountNumber;
-import static com.wizeline.utils.Utils.randomBalance;
-import static com.wizeline.utils.Utils.randomInt;
+
+import static com.wizeline.utils.Utils.*;
+
 
 public class BankAccountBOImpl implements BankAccountBO{
+
     @Override
     public List<BankAccountDTO> getAccounts() {
-        // Definicion de lista con la informacion de las cuentas existentes.
         List<BankAccountDTO> accountDTOList = new ArrayList<>();
         accountDTOList.add(buildBankAccount("user3@wizeline.com", true, Country.MX, LocalDateTime.now().minusDays(7)));
         accountDTOList.add(buildBankAccount("user1@wizeline.com", false, Country.FR, LocalDateTime.now().minusMonths(2)));
@@ -30,8 +29,7 @@ public class BankAccountBOImpl implements BankAccountBO{
         LocalDate usage = LocalDate.parse(lastUsage, dateformatter);
         return buildBankAccount(user, true, Country.MX, usage.atStartOfDay());
     }
-
-    // Creación de tipo de dato BankAccount
+    @SuppressWarnings("unused")
     private BankAccountDTO buildBankAccount(String user, boolean isActive, Country country, LocalDateTime lastUsage) {
         BankAccountDTO bankAccountDTO = new BankAccountDTO();
         bankAccountDTO.setAccountNumber(randomAcountNumber());

@@ -1,30 +1,21 @@
-
 package com.wizeline.DTO;
 
-import java.time.LocalDateTime;
 
 import com.wizeline.enums.AccountType;
+
+import java.time.LocalDateTime;
 
 public class BankAccountDTO {
 
     private long accountNumber;
-
     private String accountName;
-
     private String user;
-
     private double accountBalance;
-
     private AccountType accountType;
-
     private String country;
-
     private boolean accountActive;
-
     private LocalDateTime creationDate;
-
     private LocalDateTime lastUsage;
-
     public long getAccountNumber() {
         return accountNumber;
     }
@@ -92,6 +83,4 @@ public class BankAccountDTO {
     public LocalDateTime getLastUsage() {
         return LocalDateTime.now();
     }
-
-
 }

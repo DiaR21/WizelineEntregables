@@ -1,6 +1,7 @@
 package com.wizeline.DTO;
 
 public class ResponseDTO {
+
     private String status;
 
     private String code;

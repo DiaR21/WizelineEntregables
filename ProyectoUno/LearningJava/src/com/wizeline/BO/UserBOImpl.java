@@ -1,12 +1,12 @@
 package com.wizeline.BO;
-
-import java.util.logging.Logger;
-
 import com.wizeline.DAO.UserDAO;
 import com.wizeline.DAO.UserDAOImpl;
 import com.wizeline.DTO.ErrorDTO;
 import com.wizeline.DTO.ResponseDTO;
 import com.wizeline.utils.Utils;
+
+import java.util.logging.Logger;
+
 
 public class UserBOImpl implements UserBO {
 
@@ -50,4 +50,4 @@ public class UserBOImpl implements UserBO {
         return response;
     }
 
-}}
+}
