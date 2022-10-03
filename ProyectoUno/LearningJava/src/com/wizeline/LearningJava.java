@@ -9,6 +9,8 @@ import com.wizeline.BO.UserBOImpl;
 import com.wizeline.DTO.BankAccountDTO;
 import com.wizeline.DTO.ResponseDTO;
 import com.wizeline.DTO.UserDTO;
+import com.wizeline.PDICENIO.factorymethod.factory.NotificationFactory;
+import com.wizeline.PDICENIO.factorymethod.notifications.Notification;
 import com.wizeline.utils.exceptions.ExcepcionGenerica;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -359,5 +361,13 @@ public class LearningJava extends Thread {
     private static BankAccountDTO getAccountDetails(String user, String lastUsage) {
         BankAccountBO bankAccountBO = new BankAccountBOImpl();
         return bankAccountBO.getAccountDetails(user, lastUsage);
+    }
+
+    public static class NotificacionEmail {
+        public static void main(String[] args) {
+            NotificationFactory notificationFactory = new NotificationFactory();
+            Notification notification = notificationFactory.createNotification("EMAIL");
+            notification.notifyUser();
+        }
     }
 }
