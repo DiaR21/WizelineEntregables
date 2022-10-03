@@ -9,6 +9,7 @@ import com.wizeline.BO.UserBOImpl;
 import com.wizeline.DTO.BankAccountDTO;
 import com.wizeline.DTO.ResponseDTO;
 import com.wizeline.DTO.UserDTO;
+import com.wizeline.PDICENIO.builder.User;
 import com.wizeline.PDICENIO.factorymethod.factory.NotificationFactory;
 import com.wizeline.PDICENIO.factorymethod.notifications.Notification;
 import com.wizeline.utils.exceptions.ExcepcionGenerica;
@@ -70,6 +71,8 @@ public class LearningJava extends Thread {
             output.close();
             exchange.close();
         }));
+
+
         server.createContext("/api/createUser", (exchange -> {
             LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             ResponseDTO response = new ResponseDTO();
@@ -83,16 +86,10 @@ public class LearningJava extends Thread {
                 user = user.getParameters(splitQuery(exchange.getRequestURI()));
                 response = createUser(user.getUser(), user.getPassword());
 
-                 /**Usuario creado por el patron Builder
-                User user = new User();
-                user = user.getParameters(splitQuery(exchange.getRequestURI()));*/
-
                 JSONObject json = new JSONObject(response);
                 responseText = json.toString();
                 exchange.getResponseHeaders().set("contentType", "application/json; charset=UTF-8");
                 exchange.sendResponseHeaders(200, responseText.getBytes().length);
-
-
 
             } else {
 
@@ -107,6 +104,39 @@ public class LearningJava extends Thread {
             output.close();
             exchange.close();
         }));
+
+        /**Patron de diseño builder para agrgar o no, el numero telefonico */
+        server.createContext("/api/createUserBuilder", (exchange -> {
+            LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
+            ResponseDTO response = new ResponseDTO();
+            String responseText = "";
+
+            exchange.getRequestBody();
+            if ("POST".equals(exchange.getRequestMethod())) {
+                LOGGER.info("LearningJava - Procesando peticion HTTP de tipo GET");
+
+                User User =  new User.UserBuilder;
+                User = User.UserBuilder(splitQuery(exchange.getRequestURI()));
+                response = (User.getUser(), User.getPassword(), User.getPhone());
+                JSONObject json = new JSONObject(response);
+                responseText = json.toString();
+                exchange.getResponseHeaders().set("contentType", "application/json; charset=UTF-8");
+                exchange.sendResponseHeaders(200, responseText.getBytes().length);
+
+            } else {
+
+                exchange.sendResponseHeaders(405, -1);
+            }
+            OutputStream output = exchange.getResponseBody();
+            LOGGER.info("LearningJava - Cerrando recursos ...");
+            output.write(responseText.getBytes());
+            output.flush();
+            output.close();
+            exchange.close();
+        }));
+
+        /***/
+
         server.createContext("/api/getUserAccount", (exchange -> {
             LOGGER.info("LearningJava - Inicia procesamiento de peticion ...");
             ResponseDTO response = new ResponseDTO();

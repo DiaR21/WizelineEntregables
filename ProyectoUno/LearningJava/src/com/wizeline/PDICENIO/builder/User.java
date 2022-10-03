@@ -1,81 +1,53 @@
 package com.wizeline.PDICENIO.builder;
 
-public class User {
 
-    private String firstName;
-    private String lastName;
-    private int age;
+public class User{
+
+    private String user;
+    private String password;
     private String phone;
-    private String address;
-    private String gender;
 
-    private User(UserBuilder builder) {
-        this.firstName = builder.firstName;
-        this.lastName = builder.lastName;
-        this.age = builder.age;
+    public User(UserBuilder builder) {
+        this.user = builder.user;
+        this.password = builder.password;
         this.phone = builder.phone;
-        this.address = builder.address;
-        this.gender = builder.gender;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getUser() {
+        return user;
     }
-    public String getLastName() {
-        return lastName;
-    }
-    public int getAge() {
-        return age;
+    public String getPassword() {
+        return password;
     }
     public String getPhone() {
         return phone;
     }
-    public String getAddress() {
-        return address;
-    }
 
-    @Override
+
     public String toString() {
-        return "User: "+this.firstName+", "+this.lastName+", "+this.age+", "+this.phone+", "+this.address;
+        return "User: "+this.user+", "+this.password+", "+this.phone;
     }
     public static final class UserBuilder {
-        private String firstName;
-        private String lastName;
-        private int age;
+        private String user;
+        private String password;
         private String phone;
-        private String address;
-        private String gender;
+
 
         public UserBuilder() {
         }
 
-        public UserBuilder firstName(String firstName) {
-            this.firstName = firstName;
+        public UserBuilder user(String user) {
+            this.user = user;
             return this;
         }
 
-        public UserBuilder lastName(String lastName) {
-            this.lastName = lastName;
-            return this;
-        }
-
-        public UserBuilder age(int age) {
-            this.age = age;
+        public UserBuilder password(String password) {
+            this.password = password;
             return this;
         }
 
         public UserBuilder phone(String phone) {
             this.phone = phone;
-            return this;
-        }
-
-        public UserBuilder address(String address) {
-            this.address = address;
-            return this;
-        }
-
-        public UserBuilder gender(String gender) {
-            this.gender = gender;
             return this;
         }
 
@@ -85,6 +57,7 @@ public class User {
             return user;
         }
         private void validateUserObject(User user) {
+
         }
     }
 }
